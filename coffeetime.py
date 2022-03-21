@@ -1,4 +1,3 @@
-from doctest import master
 import threading
 import os
 os.environ['PYSTRAY_BACKEND'] = 'gtk'
@@ -14,7 +13,6 @@ from pystray import MenuItem as item
 import time
 import webbrowser
 from itertools import count
-import PySimpleGUI as sg
 
 
 if "DIRECTORY" not in os.environ:
@@ -41,6 +39,7 @@ def show_window(icon, item):
 
 
 def withdraw_window():
+    global icon
     window.withdraw()
     menu = (item('Show', show_window, default=True), item('Quit', quit_window))
     icon = pystray.Icon("name", icon_image, "title", menu)
