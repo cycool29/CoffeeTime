@@ -12,52 +12,45 @@ import pystray
 from pystray import MenuItem as item
 import time
 import webbrowser
-from itertools import count
-
-
-if "DIRECTORY" not in os.environ:
-    DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-else:
-    DIRECTORY = os.getenv("DIRECTORY")
-
 
 def update_current_time_seconds():
     currentTime = datetime.datetime.now().strftime("%H:%M")
-    time_label['text'] = "It's " + currentTime + ' now.\n'
-    time_frame.after(1, update_current_time_seconds)
-
+    if quit_everything != True:
+        time_label['text'] = "It's " + currentTime + ' now.\n'
+    window.after(1, update_current_time_seconds)
 
 def quit_window(icon, item):
-    icon.stop()
+    global stop_timer_thread
+    global quit_everything
+    stop_timer_thread = True
+    quit_everything = True
     window.destroy()
-
-
+    icon.destroy()
+    
 def show_window(icon, item):
-    icon.stop()
-    icon.visible = False
     window.after(0, window.deiconify)
 
-
 def withdraw_window():
-    global icon
     window.withdraw()
-    menu = (item('Show', show_window, default=True), item('Quit', quit_window))
-    icon = pystray.Icon("name", icon_image, "title", menu)
-    icon.run_detached()
-
 
 def open_url(url):
     webbrowser.open(url)
 
-def print_spinbox_value():
-    pass
-
-def coffee_break_countdown2():
+def start_coffee_break_countdown():
     global timer_thread
-    timer_thread = threading.Thread(target=coffee_break_countdown, name="CoffeeTime")
+    global stop_timer_thread
+    global show_notification
+    if timer_thread.is_alive():    
+        stop_timer_thread = True
+        show_notification = False
+        time.sleep(2)
+    withdraw_window()
+    timer_thread = threading.Thread(target=coffee_break_countdown, name="CoffeeTime", daemon=True)
+    stop_timer_thread = False
     timer_thread.start()
 
 def coffee_break_countdown():
+    global stop_timer_thread
     countdown_time_seconds = int(time_spinbox.get())*60 # minutes to seconds 
     original_countdown_time = countdown_time_seconds
     current_time_seconds = int(datetime.datetime.now().strftime("%H"))*3600 + int(datetime.datetime.now().strftime("%M"))*60 # hour to seconds + minutes to seconds
@@ -67,84 +60,85 @@ def coffee_break_countdown():
     
     if next_break_time_interval_user == 1:
         lefttime_label['text'] = "\nYour next coffee break is at a minute later."
+        lefttime_label.pack()
     elif next_break_time_interval_user > 1:
         lefttime_label['text'] = "\nYour next coffee break is at " + str(next_break_time_interval_user).split('.')[0] + " minutes later."
+        lefttime_label.pack()
     elif next_break_time_interval_user < 1:
-        lefttime_label['text'] = "\nYour next coffee break is at less than a minute later."    
-    window.update()
+        lefttime_label['text'] = "\nYour next coffee break is at less than a minute later."
+        lefttime_label.pack()
 
     while True:
+        if stop_timer_thread == True:
+            break
+        
         while countdown_time_seconds > 0:
-            print(countdown_time_seconds)
-            current_time_seconds = int(datetime.datetime.now().strftime("%H"))*3600 + int(datetime.datetime.now().strftime("%M"))*60
-            next_break_time_seconds = current_time_seconds + countdown_time_seconds
-            next_break_time_interval_seconds  = next_break_time_seconds - current_time_seconds
-            next_break_time_interval_user = next_break_time_interval_seconds / 60
+            try:
+                print(countdown_time_seconds)
+                current_time_seconds = int(datetime.datetime.now().strftime("%H"))*3600 + int(datetime.datetime.now().strftime("%M"))*60
+                next_break_time_seconds = current_time_seconds + countdown_time_seconds
+                next_break_time_interval_seconds  = next_break_time_seconds - current_time_seconds
+                next_break_time_interval_user = next_break_time_interval_seconds / 60
+                
+                if next_break_time_interval_user == 1:
+                    lefttime_label['text'] = "\nYour next coffee break is at a minute later."
+                    lefttime_label.pack()
+                elif next_break_time_interval_user > 1:
+                    lefttime_label['text'] = "\nYour next coffee break is at " + str(next_break_time_interval_user).split('.')[0] + " minutes later."
+                    lefttime_label.pack()
+                elif next_break_time_interval_user < 1:
+                    lefttime_label['text'] = "\nYour next coffee break is at less than a minute later."
+                    lefttime_label.pack()
+                
+                countdown_time_seconds -= 1
+                time.sleep(1)
             
-            if next_break_time_interval_user == 1:
-                lefttime_label['text'] = "\nYour next coffee break is at a minute later."
-            elif next_break_time_interval_user > 1:
-                lefttime_label['text'] = "\nYour next coffee break is at " + str(next_break_time_interval_user).split('.')[0] + " minutes later."
-            elif next_break_time_interval_user < 1:
-                lefttime_label['text'] = "\nYour next coffee break is at less than a minute later."
-            window.update()
-            
-            countdown_time_seconds -= 1
+            except:
+                stop_timer_thread = True
+                break
+            if stop_timer_thread == True:
+                break
+
+                
+        popup = tk.Toplevel()
+        popup_width = int(popup.winfo_screenwidth() / 2 - 150)
+        popup_height = int(popup.winfo_screenheight() / 2 - 50)
+        popup.title("Coffee Break")
+        popup.geometry("300x100+" + str(popup_width) + "+" + str(popup_height))
+        popup.resizable(False, False)
+        notification_label = tk.Label(popup, text="\nTake a coffee break!", font=default_font_name + " 20")
+        notification_label.pack()
+        popup.tk.call('wm', 'iconphoto', popup._w, tk.PhotoImage(file=f'{DIRECTORY}/icon.png'))
+        while tk.Toplevel.winfo_exists(popup):
             time.sleep(1)
-            
-        popup_window = tix.Tk()
-        tk.Label(text='Take a coffee break.', master=popup_window).pack()
-        popup_window.mainloop()
         countdown_time_seconds = original_countdown_time
-    
-class ImageLabel(tk.Label):
-    def load(self, im):
-        if isinstance(im, str):
-            im = Image.open(im)
-        self.loc = 0
-        self.frames = []
-
-        try:
-            for i in count(1):
-                self.frames.append(ImageTk.PhotoImage(im.copy()))
-                im.seek(i)
-        except EOFError:
-            pass
-
-        try:
-            self.delay = im.info['duration']
-        except:
-            self.delay = 100
-
-        if len(self.frames) == 1:
-            self.config(image=self.frames[0])
-        else:
-            self.next_frame()
-
-    def unload(self):
-        self.config(image="")
-        self.frames = None
-
-    def next_frame(self):
-        if self.frames:
-            self.loc += 1
-            self.loc %= len(self.frames)
-            self.config(image=self.frames[self.loc])
-            self.after(self.delay, self.next_frame)
 
 
+
+if "DIRECTORY" not in os.environ:
+    DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+else:
+    DIRECTORY = os.getenv("DIRECTORY")
+stop_timer_thread = False
+quit_everything = False
+show_notification = True
 font = Gtk.Settings.get_default().get_property("gtk-font-name")
 default_font_name = font.split(',')[0].replace(' ', '')
 default_font_size = font[-2:]
 default_font = default_font_name + ' ' + default_font_size
-icon_image = Image.open(f'{DIRECTORY}/icon.png')
+menu = (item('Show', show_window, default=True), item('Quit', quit_window))
+icon = pystray.Icon("name", Image.open(f'{DIRECTORY}/icon.png'), "title", menu)
+icon_thread = threading.Thread(target=icon.run, daemon=True, name="CoffeeTime Tray Icon")
+icon_thread.start()
+timer_thread = threading.Thread(target=coffee_break_countdown, name="CoffeeTime", daemon=True)
 
 
 # Create window
 window = tix.Tk()
+icon_photo = tk.PhotoImage(file=f'{DIRECTORY}/icon.png')
 window.geometry("450x750+500+100")
 window.title('CoffeeTime')
-window.iconphoto(False, tk.PhotoImage(file=f'{DIRECTORY}/icon.png'))
+window.iconphoto(False, icon_photo)
 window.protocol('WM_DELETE_WINDOW', withdraw_window)
 
 
@@ -172,7 +166,7 @@ spinbox_frame = tk.Frame(master=window,)
 spinbox_separator = tk.Label(
     master=spinbox_frame, text='\n\nCoffee break interval:', font=default_font)
 time_spinbox = tk.Spinbox(master=spinbox_frame, from_=0, to=10000,
-                          textvariable=spinbox_value, font=default_font, command=print_spinbox_value, width=10)
+                          textvariable=spinbox_value, font=default_font, width=10)
 time_unit = tk.Label(master=spinbox_frame, text=' minutes', font=default_font)
 spinbox_separator.pack()
 time_spinbox.pack(side=tk.LEFT)
@@ -182,7 +176,7 @@ spinbox_frame.pack()
 
 # Start from spinbox
 start_frame = tk.Frame(master=window)
-start_button = tk.Button(master=start_frame, text='Start', command=coffee_break_countdown2, font=default_font)
+start_button = tk.Button(master=start_frame, text='Start', command=start_coffee_break_countdown, font=default_font)
 start_button.pack(side=tk.BOTTOM, pady=10)
 start_frame.pack()
 
@@ -195,10 +189,11 @@ lefttime_frame.pack()
 
 # Info frame
 info_frame = tk.Frame(master=window)
-github_button = tk.Button(master=info_frame, text="GitHub", font=default_font)
+github_button = tk.Button(master=info_frame, text="GitHub", font=default_font_name + ' 11')
 sponsor_button = tk.Button(
-    master=info_frame, text="Support", font=default_font)
-quit_button = tk.Button(master=info_frame, text="Quit", font=default_font)
+    master=info_frame, text="Support", font=default_font_name + ' 11')
+quit_button = tk.Button(master=info_frame, text="Quit", font=default_font_name + ' 11')
+settings_button = tk.Button(master=info_frame, text="Settings", font=default_font_name + ' 11')
 github_button.bind(
     "<Button-1>", lambda e: open_url("https://github.com/cycool29/coffeetime"))
 sponsor_button.bind(
@@ -207,12 +202,14 @@ quit_button.bind("<Button-1>", lambda e: window.destroy())
 info_frame.pack(side="bottom",)
 github_button.pack(side="left", padx=5, pady=5)
 quit_button.pack(side="right", padx=5, pady=5)
+settings_button.pack(side="right", padx=5, pady=5)
 sponsor_button.pack(side="right", padx=5, pady=5)
 tix.Balloon(window).bind_widget(github_button,
                                 balloonmsg="View CoffeeTime GitHub page.")
 tix.Balloon(window).bind_widget(sponsor_button,
                                 balloonmsg="Buy cycool29 a coffee.")
 tix.Balloon(window).bind_widget(quit_button, balloonmsg="Quit CoffeeTime.")
+tix.Balloon(window).bind_widget(settings_button, balloonmsg="Change CoffeeTime settings.")
 
 print(time_spinbox.get())
 
