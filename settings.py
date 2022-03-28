@@ -36,18 +36,22 @@ class SettingsWindow:
         self.default_coffee_break_frame.pack()
         self.settings_window.mainloop()
             
-    settings_window = tk.Tk()
-    icon_photo = tk.PhotoImage(file=f'{DIRECTORY}/icon.png')
-    default_coffee_break_interval_stringvar = tk.StringVar(value=default_coffee_break_interval)
+    def update_config(self):
+        self.default_coffee_break_spinbox.get()
+        
+    def __init__(self) -> None:
+        self.settings_window = tk.Tk()
+        self.icon_photo = tk.PhotoImage(file=f'{DIRECTORY}/icon.png')
+        self.default_coffee_break_interval_stringvar = tk.StringVar(value=default_coffee_break_interval)
 
 
-    settings_title_frame = tk.Frame(master=settings_window)
-    logo_image = ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo.png"))
-    settings_title_label = tk.Label(master=settings_title_frame, text='Settings\n', font=default_font_name + ' 25')
+        self.settings_title_frame = tk.Frame(master=settings_window)
+        self.logo_image = ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo.png"))
+        self.ettings_title_label = tk.Label(master=self.settings_title_frame, text='Settings\n', font=default_font_name + ' 25')
 
-    default_coffee_break_frame = tk.Frame(master=settings_window)
-    default_coffee_break_label = tk.Label(master=default_coffee_break_frame, text='Default coffee break interval:', font=default_font)
-    default_coffee_break_spinbox = tk.Spinbox(master=default_coffee_break_frame, from_=1, to=10000, textvariable=default_coffee_break_interval_stringvar, font=default_font)
+        self.default_coffee_break_frame = tk.Frame(master=settings_window)
+        self.default_coffee_break_label = tk.Label(master=self.default_coffee_break_frame, text='Default coffee break interval:', font=default_font)
+        self.default_coffee_break_spinbox = tk.Spinbox(master=self.default_coffee_break_frame, from_=1, to=10000, textvariable=self.default_coffee_break_interval_stringvar, font=default_font, command=lambda: self.update_config())
 
 settings_window = SettingsWindow()
 
