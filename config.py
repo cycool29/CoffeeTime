@@ -1,0 +1,1 @@
+default_coffee_break_interval = 30
