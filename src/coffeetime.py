@@ -35,6 +35,7 @@ coffee_break_message = config['CoffeeTime']['coffee_break_message']
 coffee_break_sound = config['CoffeeTime']['coffee_break_sound']
 coffee_or_water = config['CoffeeTime']['coffee_or_water']
 ramdom_daily_quotes = config['CoffeeTime']['ramdom_daily_quotes']
+theme = config['CoffeeTime']['theme']
 
 def open_subwindow(window):
     x = window()
@@ -119,6 +120,10 @@ class MainWindow:
 
     def launch_window(self):
         self.window.protocol('WM_DELETE_WINDOW', withdraw_window(self))
+        if theme == 'light':
+            self.window.tk_setPalette(background='#d3d3d3')
+        elif theme == 'dark':
+            self.window.tk_setPalette(background='#1b1c1e')
         self.window.title("Coffee Time")
         self.window.geometry("450x600+" + str(int(screen_width / 2 - 225)) + "+" + str(int(screen_height / 2 - 300)))
         self.window.iconphoto(True, ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/icon.png")))
@@ -180,7 +185,10 @@ class MainWindow:
         self.window = tix.Tk()
         self.time_spinbox = tk.Spinbox(self.window, from_=1, to=60, increment=1, width=3)
         self.logo_frame = tk.Frame(master=self.window)
-        self.logo_image = ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo.png"))
+        if theme == 'light':
+            self.logo_image = ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo-in-light-theme.png"))
+        elif theme == 'dark':
+            self.logo_image = ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo-in-dark-theme.png"))
         self.time_frame = tk.Frame(master=self.window)
         self.time_label = tk.Label(master=self.time_frame, text="", font=default_font_name + ' 20')
         self.quote_label = tk.Label(master=self.time_frame, text="Focus, do what you do best.\nI will remind you when you need a rest. ;)", font=default_font)
@@ -212,7 +220,6 @@ class SettingsWindow:
     def launch_window(self):
         self.settings_window.geometry("450x650+" + str(int(screen_width / 2 - 225)) + "+" + str(int(screen_height / 2 - 325)))
         self.settings_window.title('CoffeeTime Settings')
-        tk.Label(master=self.settings_title_frame, image=ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/proglogo.png"))).pack()
         self.settings_title_label.pack()
         self.settings_title_frame.pack()
         self.coffee_break_interval_label.pack()
@@ -229,11 +236,16 @@ class SettingsWindow:
         self.theme_frame.pack()
         self.settings_window.mainloop()
             
+    def change_theme(self):
+        self.update_config()
+        main_window.window.tk_setPalette(background='#1b1c1e')
+        main_window.window.update()
+            
     def update_config(self):
         config['CoffeeTime']['coffee_break_interval'] = self.coffee_break_interval_spinbox.get()
         config['CoffeeTime']['coffee_break_message'] = self.coffee_break_message_entry.get()
         config['CoffeeTime']['coffee_break_sound'] = self.coffee_break_sound
-        config['CoffeeTime']['theme'] = self.theme_spinbox.get()
+        config['CoffeeTime']['theme'] = self.theme_spinbox.get().lower()
         
         with open('configurations.ini', 'w') as configfile:
             config.write(configfile)
@@ -248,6 +260,7 @@ class SettingsWindow:
         self.coffee_break_interval_stringvar = tk.StringVar(value=coffee_break_interval)
         self.coffee_break_message_stringvar = tk.StringVar(value=coffee_break_message)
         self.theme_stringvar = tk.StringVar(value='light')
+        self.coffee_break_sound = ''
         
         self.settings_title_frame = tk.Frame(master=self.settings_window)
         self.settings_title_label = tk.Label(master=self.settings_title_frame, text='Settings\n', font=default_font_name + ' 25')
@@ -266,7 +279,7 @@ class SettingsWindow:
 
         self.theme_frame = tk.Frame(master=self.settings_window)
         self.theme_label = tk.Label(master=self.theme_frame, text='\nSelect a theme:', font=default_font)
-        self.theme_spinbox = tk.Spinbox(master=self.theme_frame, textvariable=self.theme_stringvar, font=default_font, command=self.update_config, values=['Light', 'Dark'], wrap=True)
+        self.theme_spinbox = tk.Spinbox(master=self.theme_frame, textvariable=self.theme_stringvar, font=default_font, command=self.change_theme, values=['Light', 'Dark'], wrap=True)
 
 
 
