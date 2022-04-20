@@ -45,7 +45,10 @@ def open_subwindow(window):
     cycool29_is_very_cool = x.launch_window()
     del cycool29_is_very_cool
 
+
 timer_event = threading.Event()
+
+
 class CoffeeTimeTimer:
     def __init__(self):
         self.current_countdown_time_seconds = int(
@@ -122,9 +125,12 @@ class CoffeeTimeTimer:
     def start_coffee_break_countdown(self):
         main_window.window.withdraw()
         print('wow')
-        
-        timer_thread.start()
-        timer_thread.join()
+
+        if timer_thread.is_alive() == False:
+            timer_thread.start()
+            
+        print('wow')
+
 
 class MainWindow:
     def update_current_time_seconds(self):
@@ -422,7 +428,7 @@ def system_tray_icon():
     global tray
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
-                         filename='/home/pi/coffee-reminder/src/icon.png')
+                         filename='/home/pi/coffeetime/src/icon.png')
     while True:
         menu_item = tray.Read(timeout=0)
         if menu_item != None and menu_item != '__TIMEOUT__':
@@ -439,12 +445,13 @@ def system_tray_icon():
         time.sleep(0.1)
 
 
-
 def start_coffee_break_countdown():
+    print(timer)
     timer.start_coffee_break_countdown()
 
+
 timer_thread = threading.Thread(target=start_coffee_break_countdown,
-                                             name='CoffeeTime Timer')
+                                name='CoffeeTime Timer')
 
 main_window = MainWindow()
 timer = CoffeeTimeTimer()
@@ -480,7 +487,7 @@ def quit_coffeetime(window=None):
 
 screen_width = main_window.window.winfo_screenwidth()
 screen_height = main_window.window.winfo_screenheight()
-threading.Thread(target=system_tray_icon).start()
+threading.Thread(target=system_tray_icon, name='CoffeeTime SysTray').start()
 
 if __name__ == '__main__':
     main_window.launch_window()
