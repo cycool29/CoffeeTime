@@ -80,7 +80,7 @@ class CoffeeTimeTimer:
                 main_window.lefttime_label['text'] = "\nYour next coffee break is at a minute later."
                 main_window.lefttime_label.pack()
             elif self.next_break_time_interval_user > 1:  # More than 1 minute later
-                main_window.lefttime_label['text'] = "\nYour next coffee break is at " + str(
+                main_window.lefttime_label['text'] = "\nYour next coffee break is at about " + str(
                     self.next_break_time_interval_user).split(
                     '.')[0] + " minutes later."
                 main_window.lefttime_label.pack()
@@ -92,44 +92,46 @@ class CoffeeTimeTimer:
         except:
             pass
 
-    def reset_current_countdown_time(self):
-        self.current_countdown_time_seconds = self.total_countdown_time_seconds
+    def refresh_current_countdown_time(self):
+        self.current_countdown_time_seconds = int(
+            main_window.time_spinbox.get()) * 60
+        self.total_countdown_time_seconds = self.current_countdown_time_seconds
 
     def coffee_break_countdown(self):
         self.refresh_break_time()
         self.refresh_lefttime_label()
+        self.refresh_current_countdown_time()
 
         while True:
-            while current_countdown_time_seconds > 0:
-                try:
-                    print(current_countdown_time_seconds)
-                    self.refresh_curent_time()
-                    self.refresh_break_time()
-                    self.refresh_lefttime_label()
+            while self.current_countdown_time_seconds > 0:
+                # try:
+                print(self.current_countdown_time_seconds)
+                self.refresh_curent_time()
+                self.refresh_break_time()
+                self.refresh_lefttime_label()
 
-                    current_countdown_time_seconds -= 1
-                    time.sleep(1)
+                if total_countdown_time_requested == self.total_countdown_time_seconds:
+                    self.current_countdown_time_seconds -= 1
+                else:
+                    self.refresh_current_countdown_time()
+                time.sleep(1)
 
-                except:
-                    stop_timer_thread = True
-                    break
-                if stop_timer_thread == True:
-                    break
+                # except:
+                #     stop_timer_thread = True
+                #     break
 
             if show_notification == True:
                 open_subwindow(NotificationWindow)
-                self.reset_current_countdown_time()
+                self.refresh_current_countdown_time()
             else:
                 stop_timer_thread = True
 
-    def start_coffee_break_countdown(self):
-        main_window.window.withdraw()
-        print('wow')
-
-        if timer_thread.is_alive() == False:
-            timer_thread.start()
-            
-        print('wow')
+    def start_coffee_break_countdown(self, *args):
+        global total_countdown_time_requested
+        total_countdown_time_requested = int(
+            main_window.time_spinbox.get()) * 60
+        # main_window.window.withdraw()
+        timer_thread.start()
 
 
 class MainWindow:
@@ -185,6 +187,8 @@ class MainWindow:
             "<Button-1>",
             lambda e: open_url("https://buymeacoffee.com/cycool29"))
         self.quit_button.bind("<Button-1>", quit_coffeetime)
+        self.start_button.bind(
+            "<Button-1>", timer.start_coffee_break_countdown)
         self.info_frame.pack(side="bottom", )
         self.github_button.pack(side="left", padx=5, pady=5)
         self.quit_button.pack(side="right", padx=5, pady=5)
@@ -248,7 +252,6 @@ class MainWindow:
         self.start_frame = tk.Frame(master=self.window)
         self.start_button = tk.Button(master=self.start_frame,
                                       text='Start',
-                                      command=start_coffee_break_countdown,
                                       font=default_font)
         self.lefttime_frame = tk.Label(master=self.window)
         self.lefttime_label = tk.Label(master=self.lefttime_frame,
@@ -436,7 +439,6 @@ def system_tray_icon():
 
         if menu_item == 'Show' or menu_item == '__ACTIVATED__':
             if show_main_window_task_queue.full() == False:
-                print('wow')
                 show_main_window_task_queue.put('show_main_window')
 
         elif menu_item == 'Exit':
@@ -445,16 +447,12 @@ def system_tray_icon():
         time.sleep(0.1)
 
 
-def start_coffee_break_countdown():
-    print(timer)
-    timer.start_coffee_break_countdown()
-
-
-timer_thread = threading.Thread(target=start_coffee_break_countdown,
-                                name='CoffeeTime Timer')
-
 main_window = MainWindow()
+
 timer = CoffeeTimeTimer()
+
+timer_thread = threading.Thread(target=timer.coffee_break_countdown,
+                                name='CoffeeTime Timer')
 
 
 show_main_window_task_queue = Queue(maxsize=1)
