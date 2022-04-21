@@ -93,8 +93,9 @@ class CoffeeTimeTimer:
             pass
 
     def refresh_current_countdown_time(self):
-        self.current_countdown_time_seconds = int(
-            main_window.time_spinbox.get()) * 60
+        # self.current_countdown_time_seconds = int(
+        #     main_window.time_spinbox.get()) * 60
+        self.current_countdown_time_seconds = total_countdown_time_requested
         self.total_countdown_time_seconds = self.current_countdown_time_seconds
 
     def coffee_break_countdown(self):
@@ -131,7 +132,8 @@ class CoffeeTimeTimer:
         total_countdown_time_requested = int(
             main_window.time_spinbox.get()) * 60
         # main_window.window.withdraw()
-        timer_thread.start()
+        if timer_thread.is_alive() == False:
+            timer_thread.start()
 
 
 class MainWindow:
@@ -467,8 +469,8 @@ def withdraw_window(window=main_window.window):
             print('hey')
             pass
 
-        window.wm_deiconify()
-        # show_main_window_task_queue.empty()
+    window.wm_deiconify()
+    show_main_window_task_queue.empty()
 
 
 def open_url(url):
