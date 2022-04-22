@@ -1,4 +1,4 @@
-from queue import Queue  # nopep8
+from queue import Empty, Queue  # nopep8
 import configparser  # nopep8
 import threading  # nopep8
 import multiprocessing  # nopep8
@@ -134,6 +134,7 @@ class CoffeeTimeTimer:
         # main_window.window.withdraw()
         if timer_thread.is_alive() == False:
             timer_thread.start()
+            withdraw_window()
 
 
 class MainWindow:
@@ -458,19 +459,25 @@ timer_thread = threading.Thread(target=timer.coffee_break_countdown,
 
 
 show_main_window_task_queue = Queue(maxsize=1)
+show_main_window_task_queue.put('skip')
 
 
 def withdraw_window(window=main_window.window):
     window.withdraw()
     show_main_window_task_queue.empty()
+    show_main_window_task_queue.put('skip')
+    print('hey11111')
     if window == main_window.window:
+        print('ow')
         # wait for user to select show on tray
-        while show_main_window_task_queue.get() != 'show_main_window':
-            print('hey')
-            pass
-
-    window.wm_deiconify()
+        while show_main_window_task_queue.get_nowait() != 'show_main_window':
+            print(1)
+            continue
+    print(2)
+    window.deiconify()
+    window.focus()
     show_main_window_task_queue.empty()
+    show_main_window_task_queue.put('skip')
 
 
 def open_url(url):
