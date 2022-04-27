@@ -120,7 +120,7 @@ class CoffeeTimeTimer:
                 # except:
                 #     stop_timer_thread = True
                 #     break
-
+            print('timer done')
             if show_notification == True:
                 open_subwindow(NotificationWindow)
                 self.refresh_current_countdown_time()
@@ -134,7 +134,8 @@ class CoffeeTimeTimer:
         # main_window.window.withdraw()
         if timer_thread.is_alive() == False:
             timer_thread.start()
-            withdraw_window()
+            # multiprocessing.Process(target=self.coffee_break_countdown).start()
+            # withdraw_window()
 
 
 class MainWindow:
@@ -145,7 +146,8 @@ class MainWindow:
         self.window.after(1, self.update_current_time_seconds)
 
     def launch_window(self):
-        self.window.protocol('WM_DELETE_WINDOW', withdraw_window)
+        self.window.protocol('WM_DELETE_WINDOW',
+                             lambda: withdraw_window(self.window))
         if theme.lower() == 'light':
             self.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
@@ -462,22 +464,30 @@ show_main_window_task_queue = Queue(maxsize=1)
 show_main_window_task_queue.put('skip')
 
 
+def get_queue_item():
+    try:
+        return show_main_window_task_queue.get_nowait()
+    except Empty:
+        return None
+
+
 def withdraw_window(window=main_window.window):
     window.withdraw()
     show_main_window_task_queue.empty()
-    show_main_window_task_queue.put('skip')
-    print('hey11111')
+    try:
+        show_main_window_task_queue.put_nowait('skip')
+    except:
+        pass
     if window == main_window.window:
-        print('ow')
         # wait for user to select show on tray
-        while show_main_window_task_queue.get_nowait() != 'show_main_window':
-            print(1)
-            continue
-    print(2)
+        while True:
+            if get_queue_item() != 'show_main_window':
+                continue
+            else:
+                break
     window.deiconify()
-    window.focus()
     show_main_window_task_queue.empty()
-    show_main_window_task_queue.put('skip')
+    show_main_window_task_queue.put_nowait('skip')
 
 
 def open_url(url):
