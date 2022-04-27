@@ -131,11 +131,9 @@ class CoffeeTimeTimer:
         global total_countdown_time_requested
         total_countdown_time_requested = int(
             main_window.time_spinbox.get()) * 60
-        # main_window.window.withdraw()
         if timer_thread.is_alive() == False:
             timer_thread.start()
-            # multiprocessing.Process(target=self.coffee_break_countdown).start()
-            # withdraw_window()
+            withdraw_window()
 
 
 class MainWindow:
