@@ -1,3 +1,4 @@
+import pystray
 from queue import Empty, Queue  # nopep8
 import configparser  # nopep8
 import threading  # nopep8
@@ -47,6 +48,7 @@ def open_subwindow(window):
 
 
 timer_event = threading.Event()
+timer_after_id = None
 
 
 class CoffeeTimeTimer:
@@ -98,42 +100,46 @@ class CoffeeTimeTimer:
         self.current_countdown_time_seconds = total_countdown_time_requested
         self.total_countdown_time_seconds = self.current_countdown_time_seconds
 
+    def timer(self):
+        global timer_after_id
+        timer_after_id = None
+        if self.current_countdown_time_seconds > 0:
+            # try:
+            print(self.current_countdown_time_seconds)
+            self.refresh_curent_time()
+            self.refresh_break_time()
+            self.refresh_lefttime_label()
+
+            # maybe user changed the requested timer seconds
+            if total_countdown_time_requested == self.total_countdown_time_seconds:
+                self.current_countdown_time_seconds -= 1
+            else:
+                self.refresh_current_countdown_time()  # restart whole timer
+        else:
+            if total_countdown_time_requested != 0:
+                open_subwindow(NotificationWindow)
+                self.refresh_current_countdown_time()
+
+                print('Timer Done')
+
+        timer_after_id = main_window.lefttime_label.after(1000, self.timer)
+
     def coffee_break_countdown(self):
+        if timer_after_id != None:
+            main_window.lefttime_label.after_cancel(timer_after_id)
         self.refresh_break_time()
         self.refresh_lefttime_label()
         self.refresh_current_countdown_time()
 
-        while True:
-            while self.current_countdown_time_seconds > 0:
-                # try:
-                print(self.current_countdown_time_seconds)
-                self.refresh_curent_time()
-                self.refresh_break_time()
-                self.refresh_lefttime_label()
-
-                if total_countdown_time_requested == self.total_countdown_time_seconds:
-                    self.current_countdown_time_seconds -= 1
-                else:
-                    self.refresh_current_countdown_time()
-                time.sleep(1)
-
-                # except:
-                #     stop_timer_thread = True
-                #     break
-            print('timer done')
-            if show_notification == True:
-                open_subwindow(NotificationWindow)
-                self.refresh_current_countdown_time()
-            else:
-                stop_timer_thread = True
+        self.timer()
 
     def start_coffee_break_countdown(self, *args):
         global total_countdown_time_requested
         total_countdown_time_requested = int(
             main_window.time_spinbox.get()) * 60
-        if timer_thread.is_alive() == False:
-            timer_thread.start()
-            withdraw_window()
+        # if timer_thread.is_alive() == False:
+        self.coffee_break_countdown()
+        withdraw_window()
 
 
 class MainWindow:
@@ -441,8 +447,7 @@ def system_tray_icon():
             print(menu_item)
 
         if menu_item == 'Show' or menu_item == '__ACTIVATED__':
-            if show_main_window_task_queue.full() == False:
-                show_main_window_task_queue.put('show_main_window')
+            main_window.window.after(0, main_window.window.deiconify())
 
         elif menu_item == 'Exit':
             quit_coffeetime()
@@ -454,38 +459,9 @@ main_window = MainWindow()
 
 timer = CoffeeTimeTimer()
 
-timer_thread = threading.Thread(target=timer.coffee_break_countdown,
-                                name='CoffeeTime Timer')
-
-
-show_main_window_task_queue = Queue(maxsize=1)
-show_main_window_task_queue.put('skip')
-
-
-def get_queue_item():
-    try:
-        return show_main_window_task_queue.get_nowait()
-    except Empty:
-        return None
-
 
 def withdraw_window(window=main_window.window):
     window.withdraw()
-    show_main_window_task_queue.empty()
-    try:
-        show_main_window_task_queue.put_nowait('skip')
-    except:
-        pass
-    if window == main_window.window:
-        # wait for user to select show on tray
-        while True:
-            if get_queue_item() != 'show_main_window':
-                continue
-            else:
-                break
-    window.deiconify()
-    show_main_window_task_queue.empty()
-    show_main_window_task_queue.put_nowait('skip')
 
 
 def open_url(url):
