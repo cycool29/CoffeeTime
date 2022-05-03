@@ -195,7 +195,7 @@ class MainWindow:
         self.sponsor_button.bind(
             "<Button-1>",
             lambda e: open_url("https://buymeacoffee.com/cycool29"))
-        self.quit_button.bind("<Button-1>", quit_coffeetime)
+        self.quit_button.bind("<Button-1>", self.quit_coffeetime)
         self.start_button.bind(
             "<Button-1>", timer.start_coffee_break_countdown)
         self.info_frame.pack(side="bottom", )
@@ -215,6 +215,9 @@ class MainWindow:
         self.update_current_time_seconds()
 
         self.window.mainloop()
+
+    def quit_coffeetime(self, *args):
+        quit_coffeetime()
 
     def show_window(self):
         self.window.wm_deiconify()
@@ -468,11 +471,7 @@ def open_url(url):
     webbrowser.open(url)
 
 
-def quit_coffeetime(window=None):
-    global stop_timer_thread
-    global quit_everything
-    stop_timer_thread = True
-    quit_everything = True
+def quit_coffeetime():
     os._exit(0)
 
 
