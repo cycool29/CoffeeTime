@@ -146,7 +146,7 @@ class MainWindow:
             self.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
             self.window.tk_setPalette(background='#1b1c1e')
-        self.window.title("Coffee Time")
+        self.window.title("CoffeeTime")
         self.window.geometry("450x600+" + str(int(screen_width / 2 - 225)) +
                              "+" + str(int(screen_height / 2 - 300)))
         self.window.iconphoto(
@@ -181,10 +181,10 @@ class MainWindow:
         # Info frame
         self.github_button.bind(
             "<Button-1>",
-            lambda e: open_url("https://github.com/cycool29/coffeetime"))
+            lambda e: open_url("https://github.com/cycool29/CoffeeTime"))
         self.sponsor_button.bind(
             "<Button-1>",
-            lambda e: open_url("https://buymeacoffee.com/cycool29"))
+            lambda e: open_url("https://ko-fi.com/cycool29"))
         self.quit_button.bind("<Button-1>", self.quit_coffeetime)
         self.start_button.bind(
             "<Button-1>", timer.start_coffee_break_countdown)
@@ -304,14 +304,17 @@ class SettingsWindow:
         self.theme_label.pack()
         self.theme_spinbox.pack()
         self.theme_frame.pack()
+        self.save_settings_button.pack()
         self.settings_window.mainloop()
 
-    def change_theme(self):
-        self.update_config()
-        main_window.window.tk_setPalette(background='#1b1c1e')
-        main_window.window.update()
-
     def update_config(self):
+        global theme
+        global coffee_break_interval
+        global coffee_break_message
+        global coffee_break_sound
+        global coffee_or_water
+        global random_daily_quotes
+
         config['CoffeeTime'][
             'coffee_break_interval'] = self.coffee_break_interval_spinbox.get(
         )
@@ -320,8 +323,22 @@ class SettingsWindow:
         config['CoffeeTime']['coffee_break_sound'] = self.coffee_break_sound
         config['CoffeeTime']['theme'] = self.theme_spinbox.get().lower()
 
-        with open('configurations.ini', 'w') as configfile:
+        with open(DIRECTORY + '/configurations.ini', 'w') as configfile:
             config.write(configfile)
+
+        config.read(DIRECTORY + '/configurations.ini')
+        coffee_break_interval = config['CoffeeTime']['coffee_break_interval']
+        coffee_break_message = config['CoffeeTime']['coffee_break_message']
+        coffee_break_sound = config['CoffeeTime']['coffee_break_sound']
+        coffee_or_water = config['CoffeeTime']['coffee_or_water']
+        ramdom_daily_quotes = config['CoffeeTime']['ramdom_daily_quotes']
+        theme = config['CoffeeTime']['theme']
+
+        if theme.lower() == 'light':
+            main_window.window.tk_setPalette(background='#d3d3d3')
+        elif theme.lower() == 'dark':
+            main_window.window.tk_setPalette(background='#1b1c1e')
+        main_window.window.update()
 
     def choose_sound_file(self):
         self.coffee_break_sound = \
@@ -359,8 +376,7 @@ class SettingsWindow:
             from_=1,
             to=10000,
             textvariable=self.coffee_break_interval_stringvar,
-            font=default_font,
-            command=self.update_config)
+            font=default_font,)
 
         self.coffee_break_message_frame = tk.Frame(master=self.settings_window)
         self.coffee_break_message_label = tk.Label(
@@ -370,8 +386,7 @@ class SettingsWindow:
         self.coffee_break_message_entry = tk.Entry(
             master=self.coffee_break_message_frame,
             textvariable=self.coffee_break_message_stringvar,
-            font=default_font,
-            validatecommand=self.update_config)
+            font=default_font,)
 
         self.coffee_break_sound_frame = tk.Frame(master=self.settings_window)
         self.coffee_break_sound_label = tk.Label(
@@ -391,9 +406,10 @@ class SettingsWindow:
         self.theme_spinbox = tk.Spinbox(master=self.theme_frame,
                                         textvariable=self.theme_stringvar,
                                         font=default_font,
-                                        command=self.change_theme,
                                         values=self.theme_values,
                                         wrap=True)
+        self.save_settings_button = tk.Button(
+            master=self.settings_window, text='Save', font=default_font, command=self.update_config)
 
 
 class NotificationWindow:
