@@ -445,7 +445,7 @@ def system_tray_icon():
         if menu_item is not None and menu_item != '__TIMEOUT__':
             print(menu_item)
 
-        if menu_item == 'Show' or menu_item == '__ACTIVATED__':
+        if menu_item in ('Show', '__ACTIVATED__'):
             main_window.window.after(0, main_window.window.deiconify())
 
         elif menu_item == 'Exit':
