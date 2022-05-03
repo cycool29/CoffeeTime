@@ -61,11 +61,6 @@ class CoffeeTimeTimer:
                 "%M")) * 60
         return self.current_time_seconds
 
-    def calculate_time(self, type):
-        self.refresh_countdown_time()
-        if type == 'next_break_time_seconds':
-            return self.current_countdown_time_seconds + self.refresh_curent_time()
-
     def refresh_break_time(self):
         self.next_break_time_seconds = self.current_time_seconds + \
             self.current_countdown_time_seconds
