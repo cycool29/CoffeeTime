@@ -436,7 +436,6 @@ class NotificationWindow:
 
 
 def system_tray_icon():
-    global show_main_window
     global tray
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
