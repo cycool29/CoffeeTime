@@ -125,7 +125,7 @@ class CoffeeTimeTimer:
         timer_after_id = main_window.lefttime_label.after(1000, self.timer)
 
     def coffee_break_countdown(self):
-        if timer_after_id != None:
+        if timer_after_id is not None:
             main_window.lefttime_label.after_cancel(timer_after_id)
         self.refresh_break_time()
         self.refresh_lefttime_label()
@@ -145,7 +145,7 @@ class CoffeeTimeTimer:
 class MainWindow:
     def update_current_time_seconds(self):
         current_time = datetime.datetime.now().strftime("%H:%M")
-        if quit_everything != True:
+        if quit_everything is not True:
             self.time_label['text'] = "It's " + current_time + ' now.\n'
         self.window.after(1, self.update_current_time_seconds)
 
@@ -439,17 +439,16 @@ class NotificationWindow:
 
 
 def system_tray_icon():
-    global show_main_window
     global tray
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
                          filename='/home/pi/coffeetime/src/icon.png')
     while True:
         menu_item = tray.Read(timeout=0)
-        if menu_item != None and menu_item != '__TIMEOUT__':
+        if menu_item is not None and menu_item != '__TIMEOUT__':
             print(menu_item)
 
-        if menu_item == 'Show' or menu_item == '__ACTIVATED__':
+        if menu_item in ('Show', '__ACTIVATED__'):
             main_window.window.after(0, main_window.window.deiconify())
 
         elif menu_item == 'Exit':
