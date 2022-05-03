@@ -1,8 +1,5 @@
-import pystray
-from queue import Empty, Queue  # nopep8
 import configparser  # nopep8
 import threading  # nopep8
-import multiprocessing  # nopep8
 import os  # nopep8
 
 os.environ['PYSTRAY_BACKEND'] = 'gtk'  # nopep8
