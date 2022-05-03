@@ -92,8 +92,6 @@ class CoffeeTimeTimer:
             pass
 
     def refresh_current_countdown_time(self):
-        # self.current_countdown_time_seconds = int(
-        #     main_window.time_spinbox.get()) * 60
         self.current_countdown_time_seconds = total_countdown_time_requested
         self.total_countdown_time_seconds = self.current_countdown_time_seconds
 
@@ -218,8 +216,6 @@ class MainWindow:
 
     def show_window(self):
         self.window.wm_deiconify()
-        # self.window.attributes('-topmost', 1)
-        # self.window.attributes('-topmost', 0)
 
     def __init__(self) -> None:
         self.window = tix.Tk()
