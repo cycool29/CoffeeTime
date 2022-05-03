@@ -442,7 +442,7 @@ def system_tray_icon():
                          filename='/home/pi/coffeetime/src/icon.png')
     while True:
         menu_item = tray.Read(timeout=0)
-        if menu_item != None and menu_item != '__TIMEOUT__':
+        if menu_item is not None and menu_item != '__TIMEOUT__':
             print(menu_item)
 
         if menu_item == 'Show' or menu_item == '__ACTIVATED__':
