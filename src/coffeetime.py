@@ -432,7 +432,6 @@ class NotificationWindow:
 
 
 def system_tray_icon():
-    global tray
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
                          filename='/home/pi/coffeetime/src/icon.png')
