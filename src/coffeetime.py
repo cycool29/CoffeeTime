@@ -125,7 +125,7 @@ class CoffeeTimeTimer:
         timer_after_id = main_window.lefttime_label.after(1000, self.timer)
 
     def coffee_break_countdown(self):
-        if timer_after_id != None:
+        if timer_after_id is not None:
             main_window.lefttime_label.after_cancel(timer_after_id)
         self.refresh_break_time()
         self.refresh_lefttime_label()
@@ -145,7 +145,7 @@ class CoffeeTimeTimer:
 class MainWindow:
     def update_current_time_seconds(self):
         current_time = datetime.datetime.now().strftime("%H:%M")
-        if quit_everything != True:
+        if quit_everything is not True:
             self.time_label['text'] = "It's " + current_time + ' now.\n'
         self.window.after(1, self.update_current_time_seconds)
 
