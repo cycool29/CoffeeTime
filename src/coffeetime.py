@@ -2,9 +2,6 @@ import pyautogui
 import configparser  # nopep8
 import threading  # nopep8
 import os  # nopep8
-
-os.environ['PYSTRAY_BACKEND'] = 'gtk'  # nopep8
-
 if os.name == 'nt':
     RUNNING_ON_WINDOWS = True
     import ctypes
