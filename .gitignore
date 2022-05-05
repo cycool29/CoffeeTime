@@ -1,4 +1,4 @@
-test.py
+test*.py
 __pycache__
 .idea/coffee-reminder.iml
 .idea/misc.xml

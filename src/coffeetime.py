@@ -1,12 +1,20 @@
+import pyautogui
 import configparser  # nopep8
 import threading  # nopep8
 import os  # nopep8
 
 os.environ['PYSTRAY_BACKEND'] = 'gtk'  # nopep8
-import gi  # nopep8
 
-gi.require_version('Gtk', '3.0')  # nopep8
-from gi.repository import Gtk  # nopep8
+if os.name == 'nt':
+    RUNNING_ON_WINDOWS = True
+    import ctypes
+
+if os.name == 'posix':
+    RUNNING_ON_WINDOWS = False
+    import gi  # nopep8
+    gi.require_version('Gtk', '3.0')  # nopep8
+    from gi.repository import Gtk  # nopep8
+
 from PIL import ImageTk, Image  # nopep8
 from tkinter import tix  # nopep8
 import tkinter as tk  # nopep8
@@ -23,10 +31,16 @@ else:
 stop_timer_thread = False
 quit_everything = False
 show_notification = True
-font = Gtk.Settings.get_default().get_property("gtk-font-name")
-default_font_name = font.split(',')[0].replace(' ', '')
-default_font_size = font[-2:]
-default_font = default_font_name + ' ' + default_font_size
+
+if os.name == 'posix':
+    font = Gtk.Settings.get_default().get_property("gtk-font-name")
+    default_font_name = font.split(',')[0].replace(' ', '')
+    default_font_size = font[-2:]
+    default_font = (default_font_name, default_font_size)
+else:
+    default_font_name = 'Segoe UI'
+    default_font_size = '12'
+    default_font = ('Segoe UI', 12)
 
 config = configparser.ConfigParser()
 config.read(DIRECTORY + '/configurations.ini')
@@ -36,6 +50,9 @@ coffee_break_sound = config['CoffeeTime']['coffee_break_sound']
 coffee_or_water = config['CoffeeTime']['coffee_or_water']
 ramdom_daily_quotes = config['CoffeeTime']['ramdom_daily_quotes']
 theme = config['CoffeeTime']['theme']
+
+
+QUIT = False
 
 
 def open_subwindow(window):
@@ -147,9 +164,10 @@ class MainWindow:
         elif theme.lower() == 'dark':
             self.window.tk_setPalette(background='#1b1c1e')
         self.window.title("CoffeeTime")
-        self.window.geometry("450x600+" + str(int(screen_width / 2 - 225)) +
-                             "+" + str(int(screen_height / 2 - 300)))
-        self.window.iconphoto(
+        self.window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
+                             "+" + str(int(screen_height / 2 - 450)))
+
+        self.window.wm_iconphoto(
             True, ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/icon.png")))
         self.window.deiconify()
         self.time_spinbox.pack()
@@ -204,6 +222,8 @@ class MainWindow:
 
         self.update_current_time_seconds()
 
+        self.window.after(0, lambda: self.window.focus_force())
+
         self.window.mainloop()
 
     def quit_coffeetime(self, *args):
@@ -229,7 +249,7 @@ class MainWindow:
         self.time_frame = tk.Frame(master=self.window)
         self.time_label = tk.Label(master=self.time_frame,
                                    text="",
-                                   font=default_font_name + ' 20')
+                                   font=(default_font_name, 20))
         self.quote_label = tk.Label(
             master=self.time_frame,
             text="Focus, do what you do best.\nI will remind you when you need a rest. ;)",
@@ -256,21 +276,21 @@ class MainWindow:
         self.lefttime_frame = tk.Label(master=self.window)
         self.lefttime_label = tk.Label(master=self.lefttime_frame,
                                        text='',
-                                       font=default_font_name + ' 11')
+                                       font=(default_font_name, 11))
         self.info_frame = tk.Frame(master=self.window)
         self.github_button = tk.Button(master=self.info_frame,
                                        text="GitHub",
-                                       font=default_font_name + ' 11')
+                                       font=(default_font_name, 11))
         self.sponsor_button = tk.Button(master=self.info_frame,
                                         text="Support",
-                                        font=default_font_name + ' 11')
+                                        font=(default_font_name, 11))
         self.quit_button = tk.Button(master=self.info_frame,
                                      text="Quit",
-                                     font=default_font_name + ' 11')
+                                     font=(default_font_name, 11))
         self.settings_button = tk.Button(
             master=self.info_frame,
             text="Settings",
-            font=default_font_name + ' 11',
+            font=(default_font_name, 11),
             command=lambda: open_subwindow(SettingsWindow))
 
 
@@ -286,9 +306,8 @@ class MainWindow:
 class SettingsWindow:
 
     def launch_window(self):
-        self.settings_window.geometry("450x650+" +
-                                      str(int(screen_width / 2 - 225)) + "+" +
-                                      str(int(screen_height / 2 - 325)))
+        self.settings_window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
+                                      "+" + str(int(screen_height / 2 - 450)))
         self.settings_window.title('CoffeeTime Settings')
         self.settings_title_label.pack()
         self.settings_title_frame.pack()
@@ -304,7 +323,10 @@ class SettingsWindow:
         self.theme_label.pack()
         self.theme_spinbox.pack()
         self.theme_frame.pack()
+        self.separator_between_save_button_and_theme_spinbox.pack()
         self.save_settings_button.pack()
+        self.settings_window.after(
+            1, lambda: self.settings_window.focus_force())
         self.settings_window.mainloop()
 
     def update_config(self):
@@ -363,7 +385,7 @@ class SettingsWindow:
         self.settings_title_frame = tk.Frame(master=self.settings_window)
         self.settings_title_label = tk.Label(master=self.settings_title_frame,
                                              text='Settings\n',
-                                             font=default_font_name + ' 25')
+                                             font=(default_font_name, 25))
 
         self.coffee_break_interval_frame = tk.Frame(
             master=self.settings_window)
@@ -408,6 +430,8 @@ class SettingsWindow:
                                         font=default_font,
                                         values=self.theme_values,
                                         wrap=True)
+        self.separator_between_save_button_and_theme_spinbox = tk.Label(
+            master=self.theme_frame, text='\n')
         self.save_settings_button = tk.Button(
             master=self.settings_window, text='Save', font=default_font, command=self.update_config)
 
@@ -445,8 +469,13 @@ class NotificationWindow:
 def system_tray_icon():
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
-                         filename='/home/pi/coffeetime/src/icon.png')
+                         filename=DIRECTORY + '/icon.png', tooltip='Launch CoffeeTime main window')
+
     while True:
+        if QUIT:
+            tray.Close()
+            break
+
         menu_item = tray.Read(timeout=0)
         if menu_item is not None and menu_item != '__TIMEOUT__':
             print(menu_item)
@@ -456,8 +485,6 @@ def system_tray_icon():
 
         elif menu_item == 'Exit':
             quit_coffeetime()
-
-        time.sleep(0.1)
 
 
 main_window = MainWindow()
@@ -474,11 +501,23 @@ def open_url(url):
 
 
 def quit_coffeetime():
+    global QUIT
     os._exit(0)
 
 
+# if RUNNING_ON_WINDOWS:
+#     user32 = ctypes.windll.user32
+#     screen_width = user32.GetSystemMetrics(0)
+#     screen_height = user32.GetSystemMetrics(1)
+# else:
 screen_width = main_window.window.winfo_screenwidth()
 screen_height = main_window.window.winfo_screenheight()
+
+screen_width, screen_height = pyautogui.size()
+
+print(screen_height)
+print(screen_width)
+
 threading.Thread(target=system_tray_icon, name='CoffeeTime SysTray').start()
 
 if __name__ == '__main__':
