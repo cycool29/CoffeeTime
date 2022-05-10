@@ -1,4 +1,3 @@
-import pyautogui
 import configparser  # nopep8
 import threading  # nopep8
 import os  # nopep8
@@ -510,7 +509,7 @@ def quit_coffeetime():
 screen_width = main_window.window.winfo_screenwidth()
 screen_height = main_window.window.winfo_screenheight()
 
-screen_width, screen_height = pyautogui.size()
+# screen_width, screen_height = pyautogui.size()
 
 print(screen_height)
 print(screen_width)
