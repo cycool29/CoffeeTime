@@ -458,7 +458,6 @@ class NotificationWindow:
                                                       150)) + "+" +
                                               str(int(screen_height / 2 - 50)))
             self.notification_window.update()
-            time.sleep(1)
             print('waiting')
 
 
@@ -473,11 +472,11 @@ def system_tray_icon():
             break
 
         menu_item = tray.Read(timeout=0)
-        if menu_item is not None and menu_item != '__TIMEOUT__':
-            print(menu_item)
-
         if menu_item in ('Show', '__ACTIVATED__'):
             main_window.window.after(0, main_window.window.deiconify())
+            main_window.window.after(0, main_window.window.attributes('-topmost',True))
+            main_window.window.after(0, main_window.window.attributes('-topmost',False))
+            main_window.window.after(0, main_window.window.focus_force())
 
         elif menu_item == 'Exit':
             quit_coffeetime()
