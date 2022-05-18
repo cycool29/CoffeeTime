@@ -436,6 +436,9 @@ class NotificationWindow:
 
     def __init__(self) -> None:
         self.notification_window = tk.Toplevel()
+        self.notification_image = ImageTk.PhotoImage(
+                Image.open(f"{DIRECTORY}/icon.png").resize((100, 100), Image.ANTIALIAS))
+        self.notification_image_label = tk.Label(master=self.notification_window,  image=self.notification_image)
         self.notification_label = tk.Label(self.notification_window,
                                            text="\nTake a coffee break!",
                                            font=default_font_name + " 20")
@@ -446,12 +449,13 @@ class NotificationWindow:
         self.notification_window.attributes('-topmost', 'true')
         self.notification_window.iconphoto(False, self.logo_image)
         self.notification_window.title("Coffee Break!")
-        self.notification_window.geometry("300x100+" +
-                                          str(int(screen_width / 2 - 150)) +
+        self.notification_window.geometry("400x100+" +
+                                          str(int(screen_width / 2 - 200)) +
                                           "+" +
                                           str(int(screen_height / 2 - 50)))
         self.notification_window.resizable(False, False)
-        self.notification_label.pack()
+        self.notification_label.pack(side=tk.LEFT)
+        self.notification_image_label.pack(side=tk.LEFT)
         while tk.Toplevel.winfo_exists(self.notification_window):
             self.notification_window.geometry("300x100+" +
                                               str(int(screen_width / 2 -
@@ -496,7 +500,6 @@ def open_url(url):
 
 
 def quit_coffeetime():
-    global QUIT
     os._exit(0)
 
 
