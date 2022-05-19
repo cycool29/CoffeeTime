@@ -23,7 +23,7 @@ if "DIRECTORY" not in os.environ:
     DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 else:
     DIRECTORY = os.getenv("DIRECTORY")
-    
+
 stop_timer_thread = False
 show_notification = True
 
@@ -45,6 +45,7 @@ coffee_break_sound = config['CoffeeTime']['coffee_break_sound']
 coffee_or_water = config['CoffeeTime']['coffee_or_water']
 ramdom_daily_quotes = config['CoffeeTime']['ramdom_daily_quotes']
 theme = config['CoffeeTime']['theme']
+
 
 def open_subwindow(window):
     x = window()
@@ -431,8 +432,9 @@ class NotificationWindow:
     def __init__(self) -> None:
         self.notification_window = tk.Toplevel()
         self.notification_image = ImageTk.PhotoImage(
-                Image.open(f"{DIRECTORY}/icon.png").resize((100, 100), Image.ANTIALIAS))
-        self.notification_image_label = tk.Label(master=self.notification_window,  image=self.notification_image)
+            Image.open(f"{DIRECTORY}/icon.png").resize((100, 100), Image.ANTIALIAS))
+        self.notification_image_label = tk.Label(
+            master=self.notification_window,  image=self.notification_image)
         self.notification_label = tk.Label(self.notification_window,
                                            text="\nTake a coffee break!",
                                            font=default_font_name + " 20")
@@ -468,8 +470,10 @@ def system_tray_icon():
         menu_item = tray.Read(timeout=0)
         if menu_item in ('Show', '__ACTIVATED__'):
             main_window.window.after(0, main_window.window.deiconify())
-            main_window.window.after(0, main_window.window.attributes('-topmost',True))
-            main_window.window.after(0, main_window.window.attributes('-topmost',False))
+            main_window.window.after(
+                0, main_window.window.attributes('-topmost', True))
+            main_window.window.after(
+                0, main_window.window.attributes('-topmost', False))
             main_window.window.after(0, main_window.window.focus_force())
 
         elif menu_item == 'Exit':
