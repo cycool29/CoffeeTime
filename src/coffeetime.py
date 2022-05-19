@@ -15,7 +15,6 @@ from PIL import ImageTk, Image  # nopep8
 from tkinter import tix  # nopep8
 import tkinter as tk  # nopep8
 import datetime  # nopep8
-import time  # nopep8
 import webbrowser  # nopep8
 import PySimpleGUIQt as sg  # nopep8
 import plyer
@@ -24,8 +23,8 @@ if "DIRECTORY" not in os.environ:
     DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 else:
     DIRECTORY = os.getenv("DIRECTORY")
+    
 stop_timer_thread = False
-quit_everything = False
 show_notification = True
 
 if os.name == 'posix':
@@ -46,10 +45,6 @@ coffee_break_sound = config['CoffeeTime']['coffee_break_sound']
 coffee_or_water = config['CoffeeTime']['coffee_or_water']
 ramdom_daily_quotes = config['CoffeeTime']['ramdom_daily_quotes']
 theme = config['CoffeeTime']['theme']
-
-
-QUIT = False
-
 
 def open_subwindow(window):
     x = window()
@@ -148,8 +143,7 @@ class CoffeeTimeTimer:
 class MainWindow:
     def update_current_time_seconds(self):
         current_time = datetime.datetime.now().strftime("%H:%M")
-        if quit_everything is not True:
-            self.time_label['text'] = "It's " + current_time + ' now.\n'
+        self.time_label['text'] = "It's " + current_time + ' now.\n'
         self.window.after(1, self.update_current_time_seconds)
 
     def launch_window(self):
@@ -471,10 +465,6 @@ def system_tray_icon():
                          filename=DIRECTORY + '/icon.png', tooltip='Launch CoffeeTime main window')
 
     while True:
-        if QUIT:
-            tray.Close()
-            break
-
         menu_item = tray.Read(timeout=0)
         if menu_item in ('Show', '__ACTIVATED__'):
             main_window.window.after(0, main_window.window.deiconify())
