@@ -1,3 +1,4 @@
+from PIL import ImageGrab
 import configparser  # nopep8
 import threading  # nopep8
 import os  # nopep8
@@ -165,7 +166,7 @@ class MainWindow:
         self.start_button.pack()
 
         # Logo frame
-        tk.Label(master=self.logo_frame, image=self.logo_image).pack()
+        self.logo_image_top.pack()
         self.logo_frame.pack()
 
         # Text frame
@@ -237,6 +238,8 @@ class MainWindow:
         elif theme.lower() == 'dark':
             self.logo_image = ImageTk.PhotoImage(
                 Image.open(f"{DIRECTORY}/proglogo-in-dark-theme.png"))
+        self.logo_image_top = tk.Label(
+            master=self.logo_frame, image=self.logo_image)
         self.time_frame = tk.Frame(master=self.window)
         self.time_label = tk.Label(master=self.time_frame,
                                    text="",
@@ -348,10 +351,22 @@ class SettingsWindow:
         theme = config['CoffeeTime']['theme']
 
         if theme.lower() == 'light':
+            main_window.logo_image.__del__()
+            main_window.logo_image = ImageTk.PhotoImage(
+                Image.open(f"{DIRECTORY}/proglogo-in-light-theme.png"))
+            main_window.logo_image_top.configure(image=main_window.logo_image)
+            main_window.logo_image_top.pack()
             main_window.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
+            main_window.logo_image.__del__()
+            main_window.logo_image = ImageTk.PhotoImage(
+                Image.open(f"{DIRECTORY}/proglogo-in-dark-theme.png", ))
+            main_window.logo_image_top.configure(image=main_window.logo_image)
+            main_window.logo_image_top.pack()
             main_window.window.tk_setPalette(background='#1b1c1e')
+
         main_window.window.update()
+
 
     def choose_sound_file(self):
         self.coffee_break_sound = \
@@ -502,10 +517,16 @@ def quit_coffeetime():
 #     screen_width = user32.GetSystemMetrics(0)
 #     screen_height = user32.GetSystemMetrics(1)
 # else:
-screen_width = main_window.window.winfo_screenwidth()
-screen_height = main_window.window.winfo_screenheight()
+# screen_width = main_window.window.winfo_screenwidth()
+# screen_height = main_window.window.winfo_screenheight()
 
-# screen_width, screen_height = pyautogui.size()
+screen_width, screen_height = ImageGrab.grab().size
+
+
+
+img = ImageGrab.grab()
+print (img.size)
+
 
 print(screen_height)
 print(screen_width)
