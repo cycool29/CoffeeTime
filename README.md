@@ -4,7 +4,6 @@
     A coffee reminder for programmers. (WIP)
 </p>
 
-<br></br>
 
 
 ## To-do
