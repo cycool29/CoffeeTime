@@ -2,9 +2,9 @@
     <img src="https://github.com/cycool29/CoffeeTime/raw/master/src/proglogo-in-dark-theme.png#gh-dark-mode-only"/> 
     <img src="https://github.com/cycool29/CoffeeTime/raw/master/src/proglogo-in-light-theme.png#gh-light-mode-only"/>
     A coffee reminder for programmers. (WIP)
-    <br></br>
 </p>
 
+<br></br>
 
 
 ## To-do
