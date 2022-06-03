@@ -5,8 +5,6 @@
 </p>
 
 
-<br></br>
-
 
 ## To-do
 - [ ] [Coderadio](https://coderadio.freecodecamp.org/)
