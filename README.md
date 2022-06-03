@@ -6,4 +6,7 @@ Working in progress.
 
 ## To-do
 - [ ] [Coderadio](https://coderadio.freecodecamp.org/)
-- [ ] Customizable notification window
+- [ ] Customizable notification window 
+- [ ] Sound effect
+- [ ] Set default notification message
+- [ ] Set default coffee break interval
