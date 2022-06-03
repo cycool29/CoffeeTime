@@ -460,8 +460,8 @@ class NotificationWindow:
         self.notification_window.attributes('-topmost', 'true')
         self.notification_window.iconphoto(False, self.logo_image)
         self.notification_window.title("Coffee Break!")
-        self.notification_window.geometry("400x100+" +
-                                          str(int(screen_width / 2 - 200)) +
+        self.notification_window.geometry("600x100+" +
+                                          str(int(screen_width / 2 - 300)) +
                                           "+" +
                                           str(int(screen_height / 2 - 50)))
         self.notification_window.resizable(False, False)
