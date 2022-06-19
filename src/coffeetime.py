@@ -155,6 +155,7 @@ class MainWindow:
             self.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
             self.window.tk_setPalette(background='#1b1c1e')
+            self.time_spinbox.config(bg='#1b1c1e')
         self.window.title("CoffeeTime")
         self.window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
                              "+" + str(int(screen_height / 2 - 450)))
@@ -477,6 +478,7 @@ class NotificationWindow:
 
 
 def system_tray_icon():
+    global tray
     menu_def = ['File', ['Show', 'Exit']]
     tray = sg.SystemTray(menu=menu_def,
                          filename=DIRECTORY + '/icon.png', tooltip='Launch CoffeeTime main window')
@@ -509,6 +511,7 @@ def open_url(url):
 
 
 def quit_coffeetime():
+    tray.Close()
     os._exit(0)
 
 
