@@ -1,3 +1,4 @@
+from doctest import master
 from PIL import ImageGrab
 import configparser  # nopep8
 import threading  # nopep8
@@ -19,6 +20,7 @@ import datetime  # nopep8
 import webbrowser  # nopep8
 import PySimpleGUIQt as sg  # nopep8
 import plyer
+import playsound
 
 if "DIRECTORY" not in os.environ:
     DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -50,7 +52,7 @@ theme = config['CoffeeTime']['theme']
 
 def open_subwindow(window):
     x = window()
-    cycool29_is_very_cool = x.launch_window()
+    cycool29_is_very_cool = x.window.after(0, x.launch_window())
     del cycool29_is_very_cool
 
 
@@ -118,6 +120,7 @@ class CoffeeTimeTimer:
         else:
             if total_countdown_time_requested != 0:
                 open_subwindow(NotificationWindow)
+                print('Coffee break is over!')
                 self.refresh_current_countdown_time()
 
                 print('Timer Done')
@@ -155,13 +158,12 @@ class MainWindow:
             self.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
             self.window.tk_setPalette(background='#1b1c1e')
-            self.time_spinbox.config(bg='#1b1c1e')
         self.window.title("CoffeeTime")
         self.window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
                              "+" + str(int(screen_height / 2 - 450)))
 
         self.window.wm_iconphoto(
-            True, ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/icon.png")))
+            True, ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/icon.png"), master=self.window))
         self.window.deiconify()
         self.time_spinbox.pack()
         self.start_button.pack()
@@ -227,11 +229,6 @@ class MainWindow:
 
     def __init__(self) -> None:
         self.window = tix.Tk()
-        self.time_spinbox = tk.Spinbox(self.window,
-                                       from_=1,
-                                       to=60,
-                                       increment=1,
-                                       width=3)
         self.logo_frame = tk.Frame(master=self.window)
         if theme.lower() == 'light':
             self.logo_image = ImageTk.PhotoImage(
@@ -249,7 +246,8 @@ class MainWindow:
             master=self.time_frame,
             text="Focus, do what you do best.\nI will remind you when you need a rest. ;)",
             font=default_font)
-        self.spinbox_value = 30
+        self.coffee_break_interval_stringvar = tk.StringVar(
+            value=coffee_break_interval)
         self.spinbox_frame = tk.Frame(master=self.window, )
         self.spinbox_separator = tk.Label(master=self.window,
                                           text='\n\nCoffee break interval:',
@@ -259,11 +257,10 @@ class MainWindow:
                                        to=10000,
                                        font=default_font,
                                        width=12,
-                                       textvariable=self.spinbox_value)
+                                       textvariable=self.coffee_break_interval_stringvar)
         self.time_unit = tk.Label(master=self.spinbox_frame,
                                   text=' minutes',
                                   font=default_font)
-        self.spinbox_value = 0
         self.start_frame = tk.Frame(master=self.window)
         self.start_button = tk.Button(master=self.start_frame,
                                       text='Start',
@@ -301,9 +298,18 @@ class MainWindow:
 class SettingsWindow:
 
     def launch_window(self):
-        self.settings_window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
-                                      "+" + str(int(screen_height / 2 - 450)))
-        self.settings_window.title('CoffeeTime Settings')
+        if theme.lower() == 'light':
+            self.window.tk_setPalette(background='#d3d3d3')
+        elif theme.lower() == 'dark':
+            self.window.tk_setPalette(background='#1b1c1e')
+        self.window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
+                             "+" + str(int(screen_height / 2 - 450)))
+
+        self.window.wm_iconphoto(
+            True, ImageTk.PhotoImage(Image.open(f"{DIRECTORY}/icon.png"), master=self.window))
+        self.window.geometry("600x750+" + str(int(screen_width / 2 - 300)) +
+                             "+" + str(int(screen_height / 2 - 450)))
+        self.window.title('CoffeeTime Settings')
         self.settings_title_label.pack()
         self.settings_title_frame.pack()
         self.coffee_break_interval_label.pack()
@@ -320,9 +326,9 @@ class SettingsWindow:
         self.theme_frame.pack()
         self.separator_between_save_button_and_theme_spinbox.pack()
         self.save_settings_button.pack()
-        self.settings_window.after(
-            1, lambda: self.settings_window.focus_force())
-        self.settings_window.mainloop()
+        self.window.after(
+            1, lambda: self.window.focus_force())
+        self.window.mainloop()
 
     def update_config(self):
         global theme
@@ -358,6 +364,7 @@ class SettingsWindow:
             main_window.logo_image_top.configure(image=main_window.logo_image)
             main_window.logo_image_top.pack()
             main_window.window.tk_setPalette(background='#d3d3d3')
+            self.window.tk_setPalette(background='#d3d3d3')
         elif theme.lower() == 'dark':
             main_window.logo_image.__del__()
             main_window.logo_image = ImageTk.PhotoImage(
@@ -365,9 +372,12 @@ class SettingsWindow:
             main_window.logo_image_top.configure(image=main_window.logo_image)
             main_window.logo_image_top.pack()
             main_window.window.tk_setPalette(background='#1b1c1e')
+            self.window.tk_setPalette(background='#1b1c1e')
+
+        main_window.coffee_break_interval_stringvar.set(coffee_break_interval)
 
         main_window.window.update()
-
+        self.window.update()
 
     def choose_sound_file(self):
         self.coffee_break_sound = \
@@ -377,37 +387,38 @@ class SettingsWindow:
             self.update_config()
 
     def __init__(self) -> None:
-        self.settings_window = tk.Toplevel()
+        self.window = tk.Tk()
+        print(coffee_break_interval)
         self.coffee_break_interval_stringvar = tk.StringVar(
-            value=coffee_break_interval)
+            value=coffee_break_interval, master=self.window)
         self.coffee_break_message_stringvar = tk.StringVar(
-            value=coffee_break_message)
-        self.theme_stringvar = tk.StringVar(value=theme)
+            value=coffee_break_message, master=self.window)
+        self.theme_stringvar = tk.StringVar(value=theme, master=self.window)
         if theme.lower() == 'dark':
             self.theme_values = ['Dark', 'Light']
         else:
             self.theme_values = ['Light', 'Dark']
         self.coffee_break_sound = ''
 
-        self.settings_title_frame = tk.Frame(master=self.settings_window)
+        self.settings_title_frame = tk.Frame(master=self.window)
         self.settings_title_label = tk.Label(master=self.settings_title_frame,
                                              text='Settings\n',
                                              font=(default_font_name, 25))
 
         self.coffee_break_interval_frame = tk.Frame(
-            master=self.settings_window)
+            master=self.window)
         self.coffee_break_interval_label = tk.Label(
             master=self.coffee_break_interval_frame,
             text='Coffee break interval:',
             font=default_font)
         self.coffee_break_interval_spinbox = tk.Spinbox(
             master=self.coffee_break_interval_frame,
-            from_=1,
+            from_=2,
             to=10000,
             textvariable=self.coffee_break_interval_stringvar,
             font=default_font,)
 
-        self.coffee_break_message_frame = tk.Frame(master=self.settings_window)
+        self.coffee_break_message_frame = tk.Frame(master=self.window)
         self.coffee_break_message_label = tk.Label(
             master=self.coffee_break_message_frame,
             text='\nCoffee break message:',
@@ -417,7 +428,7 @@ class SettingsWindow:
             textvariable=self.coffee_break_message_stringvar,
             font=default_font,)
 
-        self.coffee_break_sound_frame = tk.Frame(master=self.settings_window)
+        self.coffee_break_sound_frame = tk.Frame(master=self.window)
         self.coffee_break_sound_label = tk.Label(
             master=self.coffee_break_sound_frame,
             text='\nSelect a coffee break sound effect:',
@@ -428,7 +439,7 @@ class SettingsWindow:
             font=default_font,
             command=self.choose_sound_file)
 
-        self.theme_frame = tk.Frame(master=self.settings_window)
+        self.theme_frame = tk.Frame(master=self.window)
         self.theme_label = tk.Label(master=self.theme_frame,
                                     text='\nSelect a theme:',
                                     font=default_font)
@@ -440,46 +451,41 @@ class SettingsWindow:
         self.separator_between_save_button_and_theme_spinbox = tk.Label(
             master=self.theme_frame, text='\n')
         self.save_settings_button = tk.Button(
-            master=self.settings_window, text='Save', font=default_font, command=self.update_config)
+            master=self.window, text='Save', font=default_font, command=self.update_config)
 
 
 class NotificationWindow:
 
     def __init__(self) -> None:
-        self.notification_window = tk.Toplevel()
+        self.window = tk.Tk()
+        self.window.protocol('WM_DELETE_WINDOW', self.window.destroy())
         self.notification_image = ImageTk.PhotoImage(
-            Image.open(f"{DIRECTORY}/icon.png").resize((100, 100), Image.ANTIALIAS))
+            Image.open(f"{DIRECTORY}/icon.png").resize((100, 100), Image.ANTIALIAS), master=self.window)
         self.notification_image_label = tk.Label(
-            master=self.notification_window,  image=self.notification_image)
-        self.notification_label = tk.Label(self.notification_window,
+            master=self.window,  image=self.notification_image)
+        self.notification_label = tk.Label(self.window,
                                            text="\nTake a coffee break!",
                                            font=default_font_name + " 20")
         self.logo_image = ImageTk.PhotoImage(
-            Image.open(f"{DIRECTORY}/icon.png"))
+            Image.open(f"{DIRECTORY}/icon.png"), master=self.window)
 
     def launch_window(self):
-        self.notification_window.attributes('-topmost', 'true')
-        self.notification_window.iconphoto(False, self.logo_image)
-        self.notification_window.title("Coffee Break!")
-        self.notification_window.geometry("600x100+" +
+        self.window.attributes('-topmost', 'true')
+        self.window.iconphoto(False, self.logo_image)
+        self.window.title("Coffee Break!")
+        self.window.geometry("600x100+" +
                                           str(int(screen_width / 2 - 300)) +
                                           "+" +
                                           str(int(screen_height / 2 - 50)))
-        self.notification_window.resizable(False, False)
+        self.window.resizable(False, False)
         self.notification_label.pack(side=tk.LEFT)
         self.notification_image_label.pack(side=tk.LEFT)
-        while tk.Toplevel.winfo_exists(self.notification_window):
-            self.notification_window.geometry("300x100+" +
-                                              str(int(screen_width / 2 -
-                                                      150)) + "+" +
-                                              str(int(screen_height / 2 - 50)))
-            self.notification_window.update()
-            print('waiting')
+        self.window.mainloop()
 
 
 def system_tray_icon():
     global tray
-    menu_def = ['File', ['Show', 'Exit']]
+    menu_def = ['File', ['Show', 'Exit', 'Settings']]
     tray = sg.SystemTray(menu=menu_def,
                          filename=DIRECTORY + '/icon.png', tooltip='Launch CoffeeTime main window')
 
@@ -496,8 +502,12 @@ def system_tray_icon():
         elif menu_item == 'Exit':
             quit_coffeetime()
 
+        elif menu_item == 'Settings':
+            open_subwindow(SettingsWindow)
+
 
 main_window = MainWindow()
+
 
 timer = CoffeeTimeTimer()
 
@@ -526,9 +536,7 @@ def quit_coffeetime():
 screen_width, screen_height = ImageGrab.grab().size
 
 
-
 img = ImageGrab.grab()
-print (img.size)
 
 
 print(screen_height)

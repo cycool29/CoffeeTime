@@ -8,9 +8,23 @@
 <br></br>
 
 
+## Install
+
+### Linux
+
+You need to install few dependencies first before installing:
+```
+libcairo2-dev 
+libgirepository1.0-dev 
+gir1.2-gtk-3.0
+```
+
+After installing these dependencies
+
 ## To-do
 - [ ] [Coderadio](https://coderadio.freecodecamp.org/)
 - [ ] Customizable notification window 
 - [ ] Sound effect
 - [ ] Set default notification message
 - [ ] Set default coffee break interval
+- [ ] Add settings in tray icon
